@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B&S · Brand Performance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root{
+  --ink:#16232D;          /* deep slate — header, headings */
+  --ink-2:#33454F;
+  --bg:#EDF0F2;           /* cool paper */
+  --surface:#FFFFFF;
+  --line:#DDE3E7;
+  --muted:#66757F;
+  --oak:#B4713A;          /* copper-oak accent */
+  --oak-soft:#F4E9DF;
+  --up:#2E7D5B;
+  --up-soft:#E3F1EA;
+  --down:#BE4B3F;
+  --down-soft:#F8E9E6;
+  --focus:#2C6E9B;
+  --radius:10px;
+  --shadow:0 1px 2px rgba(22,35,45,.06),0 4px 14px rgba(22,35,45,.05);
+  --font-body:'Inter',system-ui,sans-serif;
+  --font-display:'Fraunces',Georgia,serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px}
+body{font-family:var(--font-body);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer}
+a{color:var(--focus)}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- header ---------- */
+header{background:var(--ink);color:#fff;padding:0 22px}
+.hd-top{display:flex;align-items:center;gap:16px;height:58px}
+.wordmark{font-family:var(--font-display);font-weight:600;font-size:1.15rem;letter-spacing:.01em;white-space:nowrap}
+.wordmark small{display:block;font-family:var(--font-body);font-weight:500;font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:#9FB0BA;margin-top:1px}
+.hd-spacer{flex:1}
+.hd-user{display:flex;align-items:center;gap:10px;font-size:.8rem;color:#C4CFD6}
+.hd-user .dot{width:8px;height:8px;border-radius:50%;background:var(--up)}
+nav.tabs{display:flex;gap:2px;overflow-x:auto}
+nav.tabs button{background:none;border:none;color:#AEBDC6;font-size:.86rem;font-weight:500;padding:11px 14px;border-bottom:3px solid transparent;white-space:nowrap}
+nav.tabs button:hover{color:#fff}
+nav.tabs button.active{color:#fff;border-bottom-color:var(--oak);font-weight:600}
+
+/* ---------- controls bar ---------- */
+.controls{position:sticky;top:0;z-index:40;background:var(--surface);border-bottom:1px solid var(--line);padding:10px 22px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.controls label{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-right:4px}
+.ctl-group{display:flex;align-items:center;gap:6px}
+select,input[type=date],input[type=search],input[type=text]{font-family:inherit;font-size:.84rem;padding:6px 9px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{background:#fff;border:none;padding:6px 11px;font-size:.8rem;color:var(--muted);border-right:1px solid var(--line)}
+.seg button:last-child{border-right:none}
+.seg button.on{background:var(--ink);color:#fff}
+.btn{border:1px solid var(--line);background:#fff;border-radius:7px;padding:6px 12px;font-size:.82rem;font-weight:500;color:var(--ink)}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--oak);border-color:var(--oak);color:#fff;font-weight:600}
+.btn.small{padding:4px 9px;font-size:.75rem}
+
+/* ---------- brand ribbon (signature) ---------- */
+.ribbon-wrap{background:var(--surface);border-bottom:1px solid var(--line);padding:10px 22px 12px}
+.ribbon{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.chip{flex:0 0 auto;display:flex;flex-direction:column;gap:3px;min-width:118px;text-align:left;background:#fff;border:1px solid var(--line);border-radius:9px;padding:8px 10px;transition:border-color .12s}
+.chip:hover{border-color:var(--ink-2)}
+.chip.on{border-color:var(--oak);background:var(--oak-soft)}
+.chip .nm{font-size:.76rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px}
+.chip .row2{display:flex;align-items:baseline;gap:6px}
+.chip .rev{font-size:.8rem;font-weight:600;font-variant-numeric:tabular-nums}
+.chip svg{display:block}
+
+/* ---------- layout ---------- */
+main{max-width:1240px;margin:0 auto;padding:20px 22px 60px}
+.panel{display:none}
+.panel.active{display:block}
+h2.sect{font-family:var(--font-display);font-weight:600;font-size:1.25rem;margin:26px 0 12px;display:flex;align-items:baseline;gap:10px}
+h2.sect:first-child{margin-top:4px}
+h2.sect .sub{font-family:var(--font-body);font-weight:400;font-size:.8rem;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+.grid{display:grid;gap:14px}
+
+/* KPI cards */
+.kpis{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.kpi .lbl{font-size:.7rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.kpi .val{font-size:1.55rem;font-weight:700;font-variant-numeric:tabular-nums;margin:4px 0 2px}
+.kpi .cmp{font-size:.76rem;font-weight:600}
+.kpi svg{margin-top:6px}
+.pos{color:var(--up)} .neg{color:var(--down)} .flat{color:var(--muted)}
+.badge{display:inline-block;font-size:.72rem;font-weight:600;padding:2px 7px;border-radius:20px;font-variant-numeric:tabular-nums}
+.badge.pos{background:var(--up-soft)} .badge.neg{background:var(--down-soft)} .badge.flat{background:#EEF1F3}
+
+/* tables */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+th{font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);text-align:right;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none}
+th:first-child,td:first-child{text-align:left}
+th.sorted{color:var(--ink)}
+th .arr{font-size:.6rem}
+td{padding:8px 10px;border-bottom:1px solid #EDF0F2;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.name{font-weight:600;max-width:280px;overflow:hidden;text-overflow:ellipsis}
+td.dim{color:var(--muted);font-weight:400}
+tr.clickable:hover td{background:#F6F8F9;cursor:pointer}
+tr.total td{font-weight:700;border-top:2px solid var(--line)}
+tr.subrow td:first-child{padding-left:30px;color:var(--ink-2)}
+.caret{display:inline-block;width:14px;color:var(--muted);font-size:.7rem}
+
+/* charts */
+.chart-box{position:relative;height:340px}
+.chart-box.tall{height:400px}
+.chart-box.short{height:230px}
+.legend-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.lchip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:20px;padding:3px 10px;font-size:.75rem;font-weight:500;background:#fff}
+.lchip .sw{width:9px;height:9px;border-radius:2px}
+.lchip.off{opacity:.38}
+.multiples{grid-template-columns:repeat(auto-fill,minmax(215px,1fr))}
+.mini{padding:10px 12px}
+.mini .t{display:flex;justify-content:space-between;align-items:baseline;font-size:.76rem;font-weight:600;margin-bottom:2px}
+.mini .t .d{font-size:.72rem}
+.mini .cv{position:relative;height:74px}
+
+/* funnel */
+.funnel-row{display:flex;align-items:center;gap:10px;margin:7px 0}
+.funnel-row .st{width:110px;font-size:.78rem;font-weight:600;text-align:right;color:var(--ink-2)}
+.funnel-bar{height:26px;background:linear-gradient(90deg,var(--ink-2),var(--ink));border-radius:5px;min-width:2px}
+.funnel-row .n{font-size:.8rem;font-weight:600;font-variant-numeric:tabular-nums}
+.funnel-step{width:110px;margin-left:120px;font-size:.72rem;color:var(--muted)}
+
+/* misc */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:900px){.split{grid-template-columns:1fr}}
+.note{font-size:.76rem;color:var(--muted);margin-top:8px}
+.pill-filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;align-items:center}
+.loading{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.85rem;padding:30px;justify-content:center}
+.spinner{width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--oak);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err{background:var(--down-soft);border:1px solid #E5C0BA;color:#7C2F26;border-radius:8px;padding:12px 14px;font-size:.84rem;margin:14px 0;white-space:pre-wrap}
+
+/* auth gate */
+#gate{position:fixed;inset:0;background:var(--ink);display:flex;align-items:center;justify-content:center;z-index:100}
+.gate-card{background:#fff;border-radius:14px;padding:38px 42px;max-width:430px;text-align:center}
+.gate-card h1{font-family:var(--font-display);font-weight:600;font-size:1.5rem;margin-bottom:6px}
+.gate-card p{font-size:.86rem;color:var(--muted);margin-bottom:22px;line-height:1.5}
+.gate-card .btn.primary{font-size:.95rem;padding:10px 22px}
+.hidden{display:none!important}
+footer{max-width:1240px;margin:0 auto;padding:0 22px 30px;font-size:.72rem;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="gate-card">
+    <h1>Brand Performance</h1>
+    <p>Live brand, category and product performance across every brand we sell, straight from BigQuery. Sign in with your Barker &amp; Stonehouse Google account to load the data.</p>
+    <button class="btn primary" id="signin">Sign in with Google</button>
+    <p class="note" id="gate-msg" style="margin-top:14px"></p>
+  </div>
+</div>
+
+<header>
+  <div class="hd-top">
+    <div class="wordmark">Barker &amp; Stonehouse<small>Brand Performance</small></div>
+    <div class="hd-spacer"></div>
+    <div class="hd-user hidden" id="hd-user"><span class="dot"></span><span>Connected to BigQuery</span></div>
+  </div>
+  <nav class="tabs" id="tabs">
+    <button data-tab="overview" class="active">Overview</button>
+    <button data-tab="trends">Trends</button>
+    <button data-tab="categories">Categories</button>
+    <button data-tab="products">Products</button>
+    <button data-tab="behaviour">Onsite Behaviour</button>
+    <button data-tab="pages">Brand Pages</button>
+  </nav>
+</header>
+
+<div class="controls">
+  <div class="ctl-group">
+    <label>Dates</label>
+    <select id="preset">
+      <option value="7">Last 7 days</option>
+      <option value="28" selected>Last 28 days</option>
+      <option value="90">Last 90 days</option>
+      <option value="182">Last 6 months</option>
+      <option value="365">Last 12 months</option>
+      <option value="mtd">Month to date</option>
+      <option value="custom">Custom…</option>
+    </select>
+    <span id="custom-dates" class="hidden">
+      <input type="date" id="d-start"> <input type="date" id="d-end">
+      <button class="btn small" id="apply-dates">Apply</button>
+    </span>
+  </div>
+  <div class="ctl-group">
+    <label>Compare</label>
+    <div class="seg" id="cmp-seg">
+      <button data-cmp="prev" class="on">Previous period</button>
+      <button data-cmp="yoy">Last year</button>
+    </div>
+  </div>
+  <div class="ctl-group">
+    <label>Granularity</label>
+    <div class="seg" id="gran-seg">
+      <button data-g="day">Day</button>
+      <button data-g="week" class="on">Week</button>
+      <button data-g="month">Month</button>
+    </div>
+  </div>
+  <div class="hd-spacer"></div>
+  <span class="note" id="range-label"></span>
+  <button class="btn small" id="refresh">↻ Refresh</button>
+</div>
+
+<div class="ribbon-wrap">
+  <div class="ribbon" id="ribbon"><div class="loading"><div class="spinner"></div>Loading brands…</div></div>
+</div>
+
+<main>
+  <div id="global-err"></div>
+
+  <!-- OVERVIEW -->
+  <section class="panel active" id="p-overview">
+    <div class="grid kpis" id="kpi-grid"></div>
+    <h2 class="sect">Brand league table <span class="sub">click a column to sort · click a brand to filter everything to it · vs comparison period</span></h2>
+    <div class="card">
+      <div class="pill-filters">
+        <input type="search" id="league-search" placeholder="Search brands…" style="min-width:220px">
+        <div class="hd-spacer"></div>
+        <button class="btn small" id="league-csv">Export CSV</button>
+      </div>
+      <div class="tbl-wrap"><table id="league"></table></div>
+    </div>
+    <h2 class="sect">Top products <span class="sub">by revenue in the selected period</span></h2>
+    <div class="card tbl-wrap"><table id="ov-products"></table></div>
+  </section>
+
+  <!-- TRENDS -->
+  <section class="panel" id="p-trends">
+    <h2 class="sect">Brand trends <span class="sub">top brands by the chosen metric — toggle lines via the chips</span></h2>
+    <div class="card">
+      <div class="pill-filters">
+        <label>Metric</label>
+        <select id="trend-metric">
+          <option value="revenue" selected>Revenue</option>
+          <option value="views">Item views</option>
+          <option value="sessions">Sessions</option>
+          <option value="atc">Add to carts</option>
+          <option value="transactions">Transactions</option>
+          <option value="items">Items purchased</option>
+          <option value="cvr">CVR % (txns / sessions)</option>
+          <option value="aov">AOV £</option>
+          <option value="atcRate">Add-to-cart rate %</option>
+          <option value="engRate">Engagement rate %</option>
+        </select>
+      </div>
+      <div class="legend-chips" id="trend-legend"></div>
+      <div class="chart-box tall"><canvas id="trend-chart"></canvas></div>
+      <p class="note" id="trend-note"></p>
+    </div>
+    <h2 class="sect">Small multiples <span class="sub">every brand at a glance — the fastest way to spot a change</span></h2>
+    <div class="grid multiples" id="multiples"></div>
+  </section>
+
+  <!-- CATEGORIES -->
+  <section class="panel" id="p-categories">
+    <h2 class="sect">Category performance <span class="sub">click a category to expand its sub-categories</span></h2>
+    <div class="card">
+      <div class="chart-box short"><canvas id="cat-chart"></canvas></div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <div class="pill-filters">
+        <label>Sort by</label>
+        <select id="cat-metric">
+          <option value="revenue" selected>Revenue</option>
+          <option value="views">Item views</option>
+          <option value="items">Items purchased</option>
+        </select>
+        <div class="hd-spacer"></div>
+        <button class="btn small" id="cat-csv">Export CSV</button>
+      </div>
+      <div class="tbl-wrap"><table id="cat-table"></table></div>
+    </div>
+  </section>
+
+  <!-- PRODUCTS -->
+  <section class="panel" id="p-products">
+    <div class="split">
+      <div class="card">
+        <h2 class="sect" style="margin-top:0">Rising <span class="sub">biggest gains vs comparison</span></h2>
+        <div class="tbl-wrap"><table id="rising"></table></div>
+      </div>
+      <div class="card">
+        <h2 class="sect" style="margin-top:0">Falling <span class="sub">biggest drops vs comparison</span></h2>
+        <div class="tbl-wrap"><table id="falling"></table></div>
+      </div>
+    </div>
+    <h2 class="sect">Viewed but not bought <span class="sub">high interest, zero sales in period — merchandising / pricing opportunities</span></h2>
+    <div class="card tbl-wrap"><table id="unbought"></table></div>
+    <h2 class="sect">All products <span class="sub">top 500 in period</span></h2>
+    <div class="card">
+      <div class="pill-filters">
+        <input type="search" id="prod-search" placeholder="Search products…" style="min-width:240px">
+        <select id="prod-cat"><option value="">All categories</option></select>
+        <div class="hd-spacer"></div>
+        <button class="btn small" id="prod-csv">Export CSV</button>
+      </div>
+      <div class="tbl-wrap"><table id="prod-table"></table></div>
+    </div>
+  </section>
+
+  <!-- BEHAVIOUR -->
+  <section class="panel" id="p-behaviour">
+    <h2 class="sect">Shopping funnel <span class="sub" id="funnel-sub"></span></h2>
+    <div class="card" id="funnel-card"></div>
+    <h2 class="sect">Funnel rates by brand <span class="sub">where each brand leaks — sorted by item views</span></h2>
+    <div class="card tbl-wrap"><table id="funnel-table"></table></div>
+    <h2 class="sect">Engagement rate by brand <span class="sub">engaged sessions ÷ sessions that viewed the brand</span></h2>
+    <div class="card"><div class="chart-box short"><canvas id="eng-chart"></canvas></div></div>
+  </section>
+
+  <!-- BRAND PAGES -->
+  <section class="panel" id="p-pages">
+    <h2 class="sect">/brands/ page sessions <span class="sub">trend for the selected period</span></h2>
+    <div class="card"><div class="chart-box short"><canvas id="pages-chart"></canvas></div></div>
+    <div class="split" style="margin-top:14px">
+      <div class="card">
+        <h2 class="sect" style="margin-top:0">Pages breakdown</h2>
+        <div class="tbl-wrap"><table id="pages-table"></table></div>
+      </div>
+      <div class="card">
+        <h2 class="sect" style="margin-top:0">Traffic sources to brand pages</h2>
+        <div class="tbl-wrap"><table id="channel-table"></table></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="foot"></footer>
+<script>
+/* ================= CONFIG ================= */
+const CONFIG = {
+  PROJECT_ID: 'commanding-air-450109-p0',
+  DATASET: 'analytics_287404213',
+  LOCATION: 'europe-west2',
+  // Create at console.cloud.google.com > APIs & Services > Credentials > OAuth client ID (Web app)
+  // Add your GitHub Pages URL to "Authorised JavaScript origins"
+  OAUTH_CLIENT_ID: '46227372300-rk63ag0caqgd7n12gjd0nt7f2qi7llqr.apps.googleusercontent.com',
+  EXCLUDED_BRANDS: ['Barker and Stonehouse','Barker & Stonehouse','B&S','(not set)'],
+  // Merge sub-brands into a parent for reporting (edit freely, or set {} to keep them separate)
+  BRAND_ALIASES: {'Tetrad Harris Tweed':'Tetrad', 'Tetrad Heritage':'Tetrad'},
+  DEMO_MODE: false,          // true = fake data, no BigQuery needed (for previewing)
+  PRODUCT_LIMIT: 500,
+  TREND_TOP_N: 8
+};
+const T = n => '`'+CONFIG.PROJECT_ID+'.'+CONFIG.DATASET+'.'+n+'`';
+
+/* ================= STATE ================= */
+const state = {
+  start:null, end:null, prevStart:null, prevEnd:null,
+  cmp:'prev', gran:'week', brand:'ALL', tab:'overview',
+  brandDaily:[], brandTotals:[], leagueSort:{key:'revenue',dir:-1},
+  cache:{}, charts:{}, expandedCats:new Set()
+};
+
+/* ================= HELPERS ================= */
+const $  = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const fmtGBP  = n => '£'+Math.round(n||0).toLocaleString('en-GB');
+const fmtGBP2 = n => '£'+(n||0).toLocaleString('en-GB',{minimumFractionDigits:0,maximumFractionDigits:0});
+const fmtNum  = n => (n||0).toLocaleString('en-GB');
+const fmtPct  = (n,d=2) => (n==null||!isFinite(n)) ? '–' : (n*100).toFixed(d)+'%';
+const iso = d => d.toISOString().slice(0,10);
+const addDays = (d,n) => { const x=new Date(d); x.setUTCDate(x.getUTCDate()+n); return x; };
+const parseISO = s => new Date(s+'T00:00:00Z');
+function delta(cur, prev){ if(!prev) return null; return (cur-prev)/prev; }
+function deltaBadge(d, invert=false){
+  if(d==null||!isFinite(d)) return '<span class="badge flat">–</span>';
+  const up = d>0.0005, down = d<-0.0005;
+  const cls = (up&&!invert)||(down&&invert) ? 'pos' : (up||down) ? 'neg' : 'flat';
+  const arrow = up?'▲':down?'▼':'–';
+  return `<span class="badge ${cls}">${arrow} ${Math.abs(d*100).toFixed(1)}%</span>`;
+}
+function sparkline(vals, w=100, h=26, color='#B4713A'){
+  if(!vals||vals.length<2) return '';
+  const max=Math.max(...vals,1), min=Math.min(...vals,0);
+  const pts = vals.map((v,i)=>`${(i/(vals.length-1)*w).toFixed(1)},${(h-2-((v-min)/(max-min||1))*(h-4)).toFixed(1)}`).join(' ');
+  return `<svg width="${w}" height="${h}" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
+}
+const PALETTE = ['#2C6E9B','#B4713A','#2E7D5B','#7E5AA2','#C2452D','#C99A2E','#3C8C93','#94414F','#5C7A29','#5865B0','#A15C88','#6B7A85'];
+const brandColor = (()=>{ const map={}; let i=0; return b => map[b] ?? (map[b]=PALETTE[i++%PALETTE.length]); })();
+function csvExport(rows, headers, filename){
+  const esc = v => `"${String(v??'').replace(/"/g,'""')}"`;
+  const csv = [headers.map(esc).join(',')].concat(rows.map(r=>r.map(esc).join(','))).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download = filename; a.click();
+}
+function bucketKey(dateStr){
+  const d = parseISO(dateStr);
+  if(state.gran==='day') return dateStr;
+  if(state.gran==='month') return dateStr.slice(0,7)+'-01';
+  const day=(d.getUTCDay()+6)%7; return iso(addDays(d,-day)); // ISO week start (Mon)
+}
+function showErr(msg){ $('#global-err').innerHTML = `<div class="err">${msg}</div>`; }
+function clearErr(){ $('#global-err').innerHTML=''; }
+
+/* ================= DATE RANGES ================= */
+function setRangeFromPreset(){
+  const p = $('#preset').value;
+  const today = new Date(); today.setUTCHours(0,0,0,0);
+  const yest = addDays(today,-1);
+  if(p==='custom'){ $('#custom-dates').classList.remove('hidden'); return false; }
+  $('#custom-dates').classList.add('hidden');
+  if(p==='mtd'){ state.start = iso(new Date(Date.UTC(yest.getUTCFullYear(),yest.getUTCMonth(),1))); state.end = iso(yest); }
+  else { const n=+p; state.end = iso(yest); state.start = iso(addDays(yest,-(n-1))); }
+  computeCompare(); return true;
+}
+function computeCompare(){
+  const s=parseISO(state.start), e=parseISO(state.end);
+  const len = Math.round((e-s)/86400000)+1;
+  if(state.cmp==='yoy'){
+    state.prevStart = iso(addDays(s,-364)); state.prevEnd = iso(addDays(e,-364));
+  } else {
+    state.prevEnd = iso(addDays(s,-1)); state.prevStart = iso(addDays(s,-len));
+  }
+  $('#range-label').textContent = `${state.start} → ${state.end}  vs  ${state.prevStart} → ${state.prevEnd}`;
+}
+
+/* ================= AUTH + BIGQUERY ================= */
+let accessToken = sessionStorage.getItem('bq_token') || null;
+let tokenClient = null;
+function initAuth(){
+  if(CONFIG.DEMO_MODE){ $('#gate').classList.add('hidden'); boot(); return; }
+  const ready = () => {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CONFIG.OAUTH_CLIENT_ID,
+      scope: 'https://www.googleapis.com/auth/bigquery.readonly',
+      callback: (resp)=>{
+        if(resp.access_token){
+          accessToken = resp.access_token;
+          sessionStorage.setItem('bq_token', accessToken);
+          $('#gate').classList.add('hidden');
+          $('#hd-user').classList.remove('hidden');
+          boot();
+        }
+      }
+    });
+    if(accessToken){ // try existing token
+      $('#gate').classList.add('hidden'); $('#hd-user').classList.remove('hidden'); boot();
+    }
+  };
+  if(window.google?.accounts) ready();
+  else window.addEventListener('load', ()=> setTimeout(ready, 300));
+  $('#signin').onclick = ()=> {
+    if(!tokenClient){ $('#gate-msg').textContent='Google sign-in is still loading — try again in a second.'; return; }
+    tokenClient.requestAccessToken();
+  };
+}
+async function bq(sql){
+  if(CONFIG.DEMO_MODE) return demoQuery(sql);
+  const url = `https://bigquery.googleapis.com/bigquery/v2/projects/${CONFIG.PROJECT_ID}/queries`;
+  const body = { query: sql, useLegacySql:false, location: CONFIG.LOCATION, timeoutMs: 60000, maxResults: 50000 };
+  let resp = await fetch(url,{method:'POST',headers:{Authorization:'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(resp.status===401){ // token expired — re-auth
+    sessionStorage.removeItem('bq_token'); accessToken=null;
+    $('#gate').classList.remove('hidden');
+    $('#gate-msg').textContent='Your session expired — sign in again.';
+    tokenClient?.requestAccessToken();
+    throw new Error('Auth expired');
+  }
+  let data = await resp.json();
+  if(data.error) throw new Error(data.error.message);
+  // poll if not complete
+  while(data.jobComplete===false){
+    await new Promise(r=>setTimeout(r,1200));
+    const jr = await fetch(`https://bigquery.googleapis.com/bigquery/v2/projects/${CONFIG.PROJECT_ID}/queries/${data.jobReference.jobId}?location=${CONFIG.LOCATION}&maxResults=50000`,{headers:{Authorization:'Bearer '+accessToken}});
+    data = await jr.json();
+    if(data.error) throw new Error(data.error.message);
+  }
+  let rows = data.rows||[], schema = data.schema.fields;
+  // paginate
+  let pageToken = data.pageToken;
+  while(pageToken){
+    const pr = await fetch(`https://bigquery.googleapis.com/bigquery/v2/projects/${CONFIG.PROJECT_ID}/queries/${data.jobReference.jobId}?location=${CONFIG.LOCATION}&maxResults=50000&pageToken=${pageToken}`,{headers:{Authorization:'Bearer '+accessToken}});
+    const pd = await pr.json();
+    rows = rows.concat(pd.rows||[]); pageToken = pd.pageToken;
+  }
+  return rows.map(r=>{
+    const o={};
+    schema.forEach((f,i)=>{
+      let v = r.f[i].v;
+      if(v!==null && ['INTEGER','INT64','FLOAT','FLOAT64','NUMERIC'].includes(f.type)) v=+v;
+      o[f.name]=v;
+    });
+    return o;
+  });
+}
+const inRange   = c => `date BETWEEN '${state.start}' AND '${state.end}'`;
+const inPrev    = c => `date BETWEEN '${state.prevStart}' AND '${state.prevEnd}'`;
+const inEither  = () => `((${inRange()}) OR (${inPrev()}))`;
+const notOwn    = col => `${col} NOT IN (${CONFIG.EXCLUDED_BRANDS.map(b=>`'${b.replace(/'/g,"\\'")}'`).join(',')})`;
+const brandCond = col => {
+  if(state.brand==='ALL') return '';
+  const names = [state.brand, ...Object.keys(CONFIG.BRAND_ALIASES).filter(k=>CONFIG.BRAND_ALIASES[k]===state.brand)];
+  return ` AND ${col} IN (${names.map(b=>`'${b.replace(/'/g,"\\'")}'`).join(',')})`;
+};
+const applyAliases = rows => { for(const r of rows){ const a=CONFIG.BRAND_ALIASES[r.brand]; if(a) r.brand=a; } return rows; };
+
+/* ================= DATA LOADING ================= */
+async function loadBrandDaily(){
+  if(CONFIG.DEMO_MODE) return demoBrandDaily();
+  const sql = `
+    WITH i AS (
+      SELECT date, brand,
+        SUM(item_views) views, SUM(add_to_carts) atc, SUM(checkouts) checkouts,
+        SUM(items_purchased) items, SUM(item_revenue) revenue
+      FROM ${T('brand_item_daily')}
+      WHERE ${inEither()} AND ${notOwn('brand')}
+      GROUP BY 1,2
+    ), s AS (
+      SELECT date, brand, sessions, engaged_sessions, transactions
+      FROM ${T('brand_daily')}
+      WHERE ${inEither()} AND ${notOwn('brand')}
+    )
+    SELECT CAST(COALESCE(i.date, s.date) AS STRING) date,
+           COALESCE(i.brand, s.brand) brand,
+           IFNULL(views,0) views, IFNULL(atc,0) atc, IFNULL(checkouts,0) checkouts,
+           IFNULL(items,0) items, IFNULL(revenue,0) revenue,
+           IFNULL(sessions,0) sessions, IFNULL(engaged_sessions,0) engaged,
+           IFNULL(transactions,0) transactions
+    FROM i FULL OUTER JOIN s USING (date, brand)`;
+  return bq(sql);
+}
+async function loadCategories(){
+  if(CONFIG.DEMO_MODE) return demoCategories();
+  const sql = `
+    SELECT brand, category, subcategory,
+      SUM(IF(${inRange()}, item_views, 0)) views,
+      SUM(IF(${inRange()}, add_to_carts, 0)) atc,
+      SUM(IF(${inRange()}, items_purchased, 0)) items,
+      SUM(IF(${inRange()}, item_revenue, 0)) revenue,
+      SUM(IF(${inPrev()}, item_views, 0)) p_views,
+      SUM(IF(${inPrev()}, items_purchased, 0)) p_items,
+      SUM(IF(${inPrev()}, item_revenue, 0)) p_revenue
+    FROM ${T('brand_item_daily')}
+    WHERE ${inEither()} AND ${notOwn('brand')}
+    GROUP BY 1,2,3`;
+  return bq(sql);
+}
+async function loadProducts(){
+  if(CONFIG.DEMO_MODE) return demoProducts();
+  const sql = `
+    WITH agg AS (
+      SELECT item_id, ANY_VALUE(item_name) item_name, ANY_VALUE(brand) brand,
+        ANY_VALUE(category) category,
+        SUM(IF(${inRange()}, item_views, 0)) views,
+        SUM(IF(${inRange()}, add_to_carts, 0)) atc,
+        SUM(IF(${inRange()}, items_purchased, 0)) items,
+        SUM(IF(${inRange()}, item_revenue, 0)) revenue,
+        SUM(IF(${inRange()}, transactions, 0)) transactions,
+        SUM(IF(${inPrev()}, item_views, 0)) p_views,
+        SUM(IF(${inPrev()}, item_revenue, 0)) p_revenue
+      FROM ${T('brand_item_daily')}
+      WHERE ${inEither()} AND ${notOwn('brand')} ${brandCond('brand')}
+      GROUP BY item_id
+    ), r AS (
+      SELECT *,
+        ROW_NUMBER() OVER(ORDER BY views DESC) rv,
+        ROW_NUMBER() OVER(ORDER BY revenue DESC) rr,
+        ROW_NUMBER() OVER(ORDER BY p_revenue DESC) rp
+      FROM agg
+    )
+    SELECT * EXCEPT(rv,rr,rp) FROM r
+    WHERE rv <= ${CONFIG.PRODUCT_LIMIT} OR rr <= ${CONFIG.PRODUCT_LIMIT} OR rp <= 300`;
+  return bq(sql);
+}
+function brandSlug(b){ return b.toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); }
+async function loadPages(){
+  if(CONFIG.DEMO_MODE) return demoPages();
+  const slugs = state.brand==='ALL' ? [] :
+    [state.brand, ...Object.keys(CONFIG.BRAND_ALIASES).filter(k=>CONFIG.BRAND_ALIASES[k]===state.brand)].map(brandSlug);
+  const slugCond = slugs.length ? ` AND brand_slug IN (${slugs.map(s=>`'${s}'`).join(',')})` : '';
+  const [trend, paths, channels] = await Promise.all([
+    bq(`SELECT CAST(date AS STRING) date, SUM(sessions) sessions
+        FROM ${T('brand_pages_daily')} WHERE ${inRange()} ${slugCond} GROUP BY 1 ORDER BY 1`),
+    bq(`SELECT page_path,
+          SUM(IF(${inRange()}, sessions, 0)) sessions,
+          SUM(IF(${inRange()}, engaged_sessions, 0)) engaged,
+          SUM(IF(${inPrev()}, sessions, 0)) p_sessions
+        FROM ${T('brand_pages_daily')} WHERE ${inEither()} ${slugCond}
+        GROUP BY 1 HAVING sessions > 0 OR p_sessions > 0
+        ORDER BY sessions DESC LIMIT 60`),
+    bq(`SELECT channel_group,
+          SUM(IF(${inRange()}, sessions, 0)) sessions,
+          SUM(IF(${inPrev()}, sessions, 0)) p_sessions
+        FROM ${T('brand_pages_daily')} WHERE ${inEither()} ${slugCond}
+        GROUP BY 1 ORDER BY sessions DESC`)
+  ]);
+  return {trend, paths, channels};
+}
+
+/* ================= AGGREGATION ================= */
+function isCur(d){ return d >= state.start && d <= state.end; }
+function isPrev(d){ return d >= state.prevStart && d <= state.prevEnd; }
+const Z = () => ({views:0,atc:0,checkouts:0,items:0,revenue:0,sessions:0,engaged:0,transactions:0});
+function accum(t,r){ for(const k of ['views','atc','checkouts','items','revenue','sessions','engaged','transactions']) t[k]+=r[k]||0; }
+function derive(t){
+  t.cvr = t.sessions ? t.transactions/t.sessions : null;
+  t.aov = t.transactions ? t.revenue/t.transactions : null;
+  t.atcRate = t.views ? t.atc/t.views : null;
+  t.engRate = t.sessions ? t.engaged/t.sessions : null;
+  return t;
+}
+function brandTotals(){
+  const map = {};
+  for(const r of state.brandDaily){
+    const b = map[r.brand] ?? (map[r.brand] = {brand:r.brand, cur:Z(), prev:Z(), weekly:{}});
+    if(isCur(r.date)){ accum(b.cur,r); const wk=bucketKeyFixed(r.date,'week'); b.weekly[wk]=(b.weekly[wk]||0)+r.revenue; }
+    else if(isPrev(r.date)) accum(b.prev,r);
+  }
+  const out = Object.values(map).map(b=>{ derive(b.cur); derive(b.prev); return b; });
+  out.sort((a,b)=>b.cur.revenue - a.cur.revenue);
+  return out;
+}
+function bucketKeyFixed(dateStr, gran){
+  const d = parseISO(dateStr);
+  if(gran==='day') return dateStr;
+  if(gran==='month') return dateStr.slice(0,7)+'-01';
+  const day=(d.getUTCDay()+6)%7; return iso(addDays(d,-day));
+}
+function totalsFiltered(period){ // period: isCur|isPrev, respects brand filter
+  const t = Z();
+  for(const r of state.brandDaily){
+    if(state.brand!=='ALL' && r.brand!==state.brand) continue;
+    if(period(r.date)) accum(t,r);
+  }
+  return derive(t);
+}
+function bucketSeries(metric, brandFilter){ // -> {labels:[], values:[]} over current range
+  const buckets = {};
+  for(const r of state.brandDaily){
+    if(!isCur(r.date)) continue;
+    if(brandFilter && r.brand!==brandFilter) continue;
+    if(!brandFilter && state.brand!=='ALL' && r.brand!==state.brand) continue;
+    const k = bucketKey(r.date);
+    (buckets[k] ?? (buckets[k]=Z())) && accum(buckets[k],r);
+  }
+  const labels = Object.keys(buckets).sort();
+  const values = labels.map(k=>{ const t=derive(buckets[k]); return metricVal(t,metric); });
+  return {labels, values};
+}
+function metricVal(t, m){
+  switch(m){
+    case 'revenue': return t.revenue; case 'views': return t.views;
+    case 'sessions': return t.sessions; case 'atc': return t.atc;
+    case 'transactions': return t.transactions; case 'items': return t.items;
+    case 'cvr': return t.cvr==null?null:+(t.cvr*100).toFixed(3);
+    case 'aov': return t.aov==null?null:Math.round(t.aov);
+    case 'atcRate': return t.atcRate==null?null:+(t.atcRate*100).toFixed(2);
+    case 'engRate': return t.engRate==null?null:+(t.engRate*100).toFixed(1);
+  }
+}
+const METRIC_FMT = {revenue:fmtGBP, views:fmtNum, sessions:fmtNum, atc:fmtNum, transactions:fmtNum, items:fmtNum,
+  cvr:v=>v+'%', aov:v=>'£'+fmtNum(v), atcRate:v=>v+'%', engRate:v=>v+'%'};
+
+/* ================= RENDER: RIBBON ================= */
+function renderRibbon(){
+  const bt = state.brandTotals;
+  const totalRev = bt.reduce((s,b)=>s+b.cur.revenue,0);
+  const totalPrev = bt.reduce((s,b)=>s+b.prev.revenue,0);
+  let html = chipHTML('ALL','All brands', totalRev, delta(totalRev,totalPrev), null);
+  for(const b of bt.slice(0,40)){
+    const weeks = Object.keys(b.weekly).sort().map(k=>b.weekly[k]);
+    html += chipHTML(b.brand, b.brand, b.cur.revenue, delta(b.cur.revenue,b.prev.revenue), weeks);
+  }
+  $('#ribbon').innerHTML = html;
+  $$('#ribbon .chip').forEach(c => c.onclick = ()=> setBrand(c.dataset.brand));
+}
+function chipHTML(id,name,rev,d,weeks){
+  const cls = d==null?'flat':d>0?'pos':'neg';
+  const arrow = d==null?'':d>0?'▲':'▼';
+  return `<button class="chip ${state.brand===id?'on':''}" data-brand="${id.replace(/"/g,'&quot;')}">
+    <span class="nm">${name}</span>
+    <span class="row2"><span class="rev">${fmtGBP(rev)}</span>
+    <span class="cmp ${cls}" style="font-size:.7rem;font-weight:600">${arrow}${d==null?'':Math.abs(d*100).toFixed(0)+'%'}</span></span>
+    ${weeks&&weeks.length>1?sparkline(weeks,96,20,'#9AA8B1'):''}</button>`;
+}
+function setBrand(b){
+  state.brand = b;
+  renderRibbon();
+  renderFromCache();
+  reloadBrandScoped();
+}
+
+/* ================= RENDER: OVERVIEW ================= */
+const KPI_DEFS = [
+  {key:'revenue', label:'Brand revenue', fmt:fmtGBP},
+  {key:'views', label:'Item views', fmt:fmtNum},
+  {key:'sessions', label:'Brand sessions', fmt:fmtNum},
+  {key:'transactions', label:'Transactions', fmt:fmtNum},
+  {key:'cvr', label:'CVR', fmt:v=>fmtPct(v)},
+  {key:'aov', label:'AOV', fmt:v=>v==null?'–':fmtGBP(v)}
+];
+function renderKPIs(){
+  const cur = totalsFiltered(isCur), prev = totalsFiltered(isPrev);
+  $('#kpi-grid').innerHTML = KPI_DEFS.map(k=>{
+    const d = delta(metricRaw(cur,k.key), metricRaw(prev,k.key));
+    const spark = bucketSeries(k.key==='cvr'?'cvr':k.key==='aov'?'aov':k.key).values;
+    return `<div class="card kpi"><div class="lbl">${k.label}</div>
+      <div class="val">${k.fmt(metricRaw(cur,k.key))}</div>
+      <div class="cmp">${deltaBadge(d)} <span class="flat" style="font-weight:400">vs comp.</span></div>
+      ${sparkline(spark.filter(v=>v!=null),150,26)}</div>`;
+  }).join('');
+}
+function metricRaw(t,k){ return k==='cvr'?t.cvr : k==='aov'?t.aov : t[k]; }
+
+const LEAGUE_COLS = [
+  {key:'brand', label:'Brand', num:false},
+  {key:'revenue', label:'Revenue', fmt:fmtGBP},
+  {key:'revShare', label:'% share', fmt:v=>fmtPct(v,1)},
+  {key:'revDelta', label:'Rev Δ', badge:true},
+  {key:'sessions', label:'Sessions', fmt:fmtNum},
+  {key:'views', label:'Item views', fmt:fmtNum},
+  {key:'atcRate', label:'ATC rate', fmt:v=>fmtPct(v,1)},
+  {key:'cvr', label:'CVR', fmt:v=>fmtPct(v)},
+  {key:'transactions', label:'Txns', fmt:fmtNum},
+  {key:'items', label:'Items', fmt:fmtNum},
+  {key:'aov', label:'AOV', fmt:v=>v==null?'–':fmtGBP(v)},
+  {key:'spark', label:'Trend', num:false}
+];
+function renderLeague(){
+  const q = ($('#league-search').value||'').toLowerCase();
+  const totalRev = state.brandTotals.reduce((s,b)=>s+b.cur.revenue,0)||1;
+  let rows = state.brandTotals
+    .filter(b=>!q || b.brand.toLowerCase().includes(q))
+    .map(b=>({ brand:b.brand, revenue:b.cur.revenue, revShare:b.cur.revenue/totalRev,
+      revDelta:delta(b.cur.revenue,b.prev.revenue), sessions:b.cur.sessions, views:b.cur.views,
+      atcRate:b.cur.atcRate, cvr:b.cur.cvr, transactions:b.cur.transactions, items:b.cur.items,
+      aov:b.cur.aov, weekly:Object.keys(b.weekly).sort().map(k=>b.weekly[k]) }));
+  const {key,dir} = state.leagueSort;
+  rows.sort((a,b)=> key==='brand' ? dir*a.brand.localeCompare(b.brand) : dir*(((a[key]??-Infinity))-((b[key]??-Infinity))));
+  const head = '<tr>'+LEAGUE_COLS.map(c=>`<th data-k="${c.key}" class="${key===c.key?'sorted':''}">${c.label}${key===c.key?`<span class="arr"> ${dir<0?'▼':'▲'}</span>`:''}</th>`).join('')+'</tr>';
+  const body = rows.map(r=>'<tr class="clickable" data-brand="'+r.brand.replace(/"/g,'&quot;')+'">'+LEAGUE_COLS.map(c=>{
+    if(c.key==='brand') return `<td class="name">${r.brand}</td>`;
+    if(c.key==='spark') return `<td>${sparkline(r.weekly,90,20,brandColor(r.brand))}</td>`;
+    if(c.badge) return `<td>${deltaBadge(r[c.key])}</td>`;
+    return `<td>${r[c.key]==null?'–':c.fmt(r[c.key])}</td>`;
+  }).join('')+'</tr>').join('');
+  const tot = totalsFilteredAll(rows);
+  $('#league').innerHTML = head + body + tot;
+  $$('#league th').forEach(th=>th.onclick=()=>{
+    const k=th.dataset.k; if(k==='spark') return;
+    state.leagueSort = {key:k, dir: state.leagueSort.key===k ? -state.leagueSort.dir : -1};
+    renderLeague();
+  });
+  $$('#league tr.clickable').forEach(tr=>tr.onclick=()=>setBrand(tr.dataset.brand));
+  $('#league-csv').onclick = ()=> csvExport(
+    rows.map(r=>[r.brand,r.revenue,(r.revShare*100).toFixed(1),r.revDelta==null?'':(r.revDelta*100).toFixed(1),r.sessions,r.views,r.atcRate==null?'':(r.atcRate*100).toFixed(1),r.cvr==null?'':(r.cvr*100).toFixed(2),r.transactions,r.items,r.aov==null?'':Math.round(r.aov)]),
+    ['Brand','Revenue','% share','Rev delta %','Sessions','Item views','ATC rate %','CVR %','Transactions','Items','AOV'],
+    `brand-league_${state.start}_${state.end}.csv`);
+}
+function totalsFilteredAll(rows){
+  const t = rows.reduce((a,r)=>({revenue:a.revenue+r.revenue,sessions:a.sessions+r.sessions,views:a.views+r.views,transactions:a.transactions+r.transactions,items:a.items+r.items}),{revenue:0,sessions:0,views:0,transactions:0,items:0});
+  return `<tr class="total"><td>Total (${rows.length} brands)</td><td>${fmtGBP(t.revenue)}</td><td>100%</td><td></td><td>${fmtNum(t.sessions)}</td><td>${fmtNum(t.views)}</td><td></td><td>${t.sessions?fmtPct(t.transactions/t.sessions):'–'}</td><td>${fmtNum(t.transactions)}</td><td>${fmtNum(t.items)}</td><td>${t.transactions?fmtGBP(t.revenue/t.transactions):'–'}</td><td></td></tr>`;
+}
+function renderOvProducts(){
+  const prods = (state.cache.products||[]).slice().sort((a,b)=>b.revenue-a.revenue).slice(0,12);
+  $('#ov-products').innerHTML = '<tr><th>Product</th><th>Brand</th><th>Category</th><th>Views</th><th>ATC</th><th>Items</th><th>Revenue</th><th>Rev Δ</th></tr>'+
+    prods.map(p=>`<tr><td class="name">${p.item_name||p.item_id}</td><td class="dim">${p.brand}</td><td class="dim">${p.category}</td><td>${fmtNum(p.views)}</td><td>${fmtNum(p.atc)}</td><td>${fmtNum(p.items)}</td><td>${fmtGBP(p.revenue)}</td><td>${deltaBadge(delta(p.revenue,p.p_revenue))}</td></tr>`).join('');
+}
+
+/* ================= RENDER: TRENDS ================= */
+let hiddenBrands = new Set();
+function renderTrends(){
+  const metric = $('#trend-metric').value;
+  const single = state.brand!=='ALL';
+  const top = single ? [state.brand] :
+    state.brandTotals.slice().sort((a,b)=>(metricVal(b.cur,metric)??-1)-(metricVal(a.cur,metric)??-1)).slice(0,CONFIG.TREND_TOP_N).map(b=>b.brand);
+  // legend
+  $('#trend-legend').innerHTML = top.map(b=>`<button class="lchip ${hiddenBrands.has(b)?'off':''}" data-b="${b.replace(/"/g,'&quot;')}"><span class="sw" style="background:${brandColor(b)}"></span>${b}</button>`).join('');
+  $$('#trend-legend .lchip').forEach(c=>c.onclick=()=>{ const b=c.dataset.b; hiddenBrands.has(b)?hiddenBrands.delete(b):hiddenBrands.add(b); renderTrends(); });
+  // datasets
+  let labels=null;
+  const datasets = top.filter(b=>!hiddenBrands.has(b)).map(b=>{
+    const s = bucketSeries(metric, b); labels = labels||s.labels;
+    return {label:b, data:s.values, borderColor:brandColor(b), backgroundColor:brandColor(b), tension:.3, pointRadius:labels.length>40?0:2, borderWidth:2, spanGaps:true};
+  });
+  if(single){ // overlay total of all brands, dashed
+    const s = bucketSeries(metric, null);
+    // note: bucketSeries with null respects state.brand — build all-brand series manually
+  }
+  drawChart('trend-chart',{type:'line',data:{labels,datasets},options:chartOpts(metric)});
+  $('#trend-note').textContent = single ? `Showing ${state.brand} — pick “All brands” in the ribbon to compare brands.` :
+    `Top ${top.length} brands by ${$('#trend-metric').selectedOptions[0].text.toLowerCase()} shown. Select a brand in the ribbon to focus.`;
+  renderMultiples(metric);
+}
+function renderMultiples(metric){
+  const brands = state.brandTotals.slice(0,18);
+  $('#multiples').innerHTML = brands.map((b,i)=>{
+    const d = delta(metricVal(b.cur,metric), metricVal(b.prev,metric));
+    return `<div class="card mini"><div class="t"><span>${b.brand}</span><span class="d">${deltaBadge(d)}</span></div>
+      <div class="cv"><canvas id="mini-${i}"></canvas></div></div>`;
+  }).join('');
+  brands.forEach((b,i)=>{
+    const s = bucketSeries(metric, b.brand);
+    drawChart('mini-'+i,{type:'line',data:{labels:s.labels,datasets:[{data:s.values,borderColor:brandColor(b.brand),borderWidth:1.6,pointRadius:0,tension:.3,fill:false,spanGaps:true}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{display:false},y:{display:false}}}});
+  });
+}
+function chartOpts(metric){
+  const money = metric==='revenue'||metric==='aov';
+  return {responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.raw==null?'–':METRIC_FMT[metric](c.raw)}`}}},
+    scales:{y:{beginAtZero:true,ticks:{callback:v=>money?'£'+v.toLocaleString():v.toLocaleString()}},x:{ticks:{maxTicksLimit:14}}}};
+}
+const chartFont = ()=>{ Chart.defaults.font.family="'Inter',sans-serif"; Chart.defaults.font.size=11; Chart.defaults.color='#66757F'; };
+function drawChart(id,cfg){ state.charts[id]?.destroy(); const el=document.getElementById(id); if(el) state.charts[id]=new Chart(el,cfg); }
+
+/* ================= RENDER: CATEGORIES ================= */
+function catRows(){
+  const rows = (state.cache.categories||[]).filter(r=> state.brand==='ALL' || r.brand===state.brand);
+  const cats = {};
+  for(const r of rows){
+    const c = cats[r.category] ?? (cats[r.category]={category:r.category, views:0,atc:0,items:0,revenue:0,p_views:0,p_items:0,p_revenue:0, subs:{}, topBrand:{}});
+    for(const k of ['views','atc','items','revenue','p_views','p_items','p_revenue']) c[k]+=r[k]||0;
+    const s = c.subs[r.subcategory] ?? (c.subs[r.subcategory]={sub:r.subcategory, views:0,atc:0,items:0,revenue:0,p_views:0,p_items:0,p_revenue:0});
+    for(const k of ['views','atc','items','revenue','p_views','p_items','p_revenue']) s[k]+=r[k]||0;
+    c.topBrand[r.brand]=(c.topBrand[r.brand]||0)+(r.revenue||0);
+  }
+  return Object.values(cats);
+}
+function renderCategories(){
+  const metric = $('#cat-metric').value;
+  const key = metric, pkey = 'p_'+metric;
+  const cats = catRows().sort((a,b)=>b[key]-a[key]);
+  // chart: top 12 categories, current vs comparison
+  const top = cats.slice(0,12);
+  drawChart('cat-chart',{type:'bar',data:{labels:top.map(c=>c.category),datasets:[
+    {label:'Current', data:top.map(c=>c[key]), backgroundColor:'#33454F'},
+    {label:'Comparison', data:top.map(c=>c[pkey]), backgroundColor:'#C9D2D8'}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',align:'end'}},
+    scales:{y:{beginAtZero:true,ticks:{callback:v=>metric==='revenue'?'£'+v.toLocaleString():v.toLocaleString()}}}}});
+  // table
+  const head = `<tr><th>Category / sub-category</th><th>Views</th><th>Views Δ</th><th>ATC</th><th>Items</th><th>Items Δ</th><th>Revenue</th><th>Rev Δ</th><th>View→buy</th>${state.brand==='ALL'?'<th>Top brand</th>':''}</tr>`;
+  let body='';
+  for(const c of cats){
+    const open = state.expandedCats.has(c.category);
+    const tb = state.brand==='ALL' ? Object.entries(c.topBrand).sort((a,b)=>b[1]-a[1])[0] : null;
+    body += `<tr class="clickable cat-row" data-cat="${c.category.replace(/"/g,'&quot;')}">
+      <td class="name"><span class="caret">${open?'▾':'▸'}</span>${c.category}</td>
+      <td>${fmtNum(c.views)}</td><td>${deltaBadge(delta(c.views,c.p_views))}</td>
+      <td>${fmtNum(c.atc)}</td><td>${fmtNum(c.items)}</td><td>${deltaBadge(delta(c.items,c.p_items))}</td>
+      <td>${fmtGBP(c.revenue)}</td><td>${deltaBadge(delta(c.revenue,c.p_revenue))}</td>
+      <td>${c.views?fmtPct(c.items/c.views):'–'}</td>
+      ${state.brand==='ALL'?`<td class="dim">${tb&&tb[1]>0?tb[0]:'–'}</td>`:''}</tr>`;
+    if(open){
+      for(const s of Object.values(c.subs).sort((a,b)=>b[key]-a[key])){
+        body += `<tr class="subrow"><td>${s.sub}</td>
+          <td>${fmtNum(s.views)}</td><td>${deltaBadge(delta(s.views,s.p_views))}</td>
+          <td>${fmtNum(s.atc)}</td><td>${fmtNum(s.items)}</td><td>${deltaBadge(delta(s.items,s.p_items))}</td>
+          <td>${fmtGBP(s.revenue)}</td><td>${deltaBadge(delta(s.revenue,s.p_revenue))}</td>
+          <td>${s.views?fmtPct(s.items/s.views):'–'}</td>${state.brand==='ALL'?'<td></td>':''}</tr>`;
+      }
+    }
+  }
+  $('#cat-table').innerHTML = head+body;
+  $$('#cat-table .cat-row').forEach(tr=>tr.onclick=()=>{
+    const c=tr.dataset.cat;
+    state.expandedCats.has(c)?state.expandedCats.delete(c):state.expandedCats.add(c);
+    renderCategories();
+  });
+  $('#cat-csv').onclick=()=>csvExport(cats.map(c=>[c.category,c.views,c.atc,c.items,c.revenue.toFixed(0)]),
+    ['Category','Views','ATC','Items','Revenue'],`categories_${state.brand}_${state.start}_${state.end}.csv`);
+}
+
+/* ================= RENDER: PRODUCTS ================= */
+function renderProducts(){
+  const prods = state.cache.products||[];
+  // category filter options
+  const cats=[...new Set(prods.map(p=>p.category))].sort();
+  const sel=$('#prod-cat'); const cv=sel.value;
+  sel.innerHTML='<option value="">All categories</option>'+cats.map(c=>`<option${c===cv?' selected':''}>${c}</option>`).join('');
+  // rising / falling by revenue change (min £250 movement)
+  const movers = prods.map(p=>({...p, chg:(p.revenue||0)-(p.p_revenue||0)})).filter(p=>Math.abs(p.chg)>=250);
+  const rising = movers.filter(p=>p.chg>0).sort((a,b)=>b.chg-a.chg).slice(0,10);
+  const falling= movers.filter(p=>p.chg<0).sort((a,b)=>a.chg-b.chg).slice(0,10);
+  const moverRow = p=>`<tr><td class="name">${p.item_name||p.item_id}</td><td class="dim">${p.brand}</td><td>${fmtGBP(p.p_revenue)}</td><td>${fmtGBP(p.revenue)}</td><td class="${p.chg>0?'pos':'neg'}" style="font-weight:600">${p.chg>0?'+':''}${fmtGBP(p.chg)}</td></tr>`;
+  const moverHead='<tr><th>Product</th><th>Brand</th><th>Comp.</th><th>Current</th><th>Change</th></tr>';
+  $('#rising').innerHTML = moverHead + (rising.map(moverRow).join('')||'<tr><td colspan="5" class="dim">No significant risers</td></tr>');
+  $('#falling').innerHTML = moverHead + (falling.map(moverRow).join('')||'<tr><td colspan="5" class="dim">No significant fallers</td></tr>');
+  // viewed not bought
+  const unb = prods.filter(p=>(p.items||0)===0 && p.views>0).sort((a,b)=>b.views-a.views).slice(0,15);
+  $('#unbought').innerHTML='<tr><th>Product</th><th>Brand</th><th>Category</th><th>Views</th><th>ATC</th><th>ATC rate</th></tr>'+
+    unb.map(p=>`<tr><td class="name">${p.item_name||p.item_id}</td><td class="dim">${p.brand}</td><td class="dim">${p.category}</td><td>${fmtNum(p.views)}</td><td>${fmtNum(p.atc)}</td><td>${p.views?fmtPct(p.atc/p.views,1):'–'}</td></tr>`).join('');
+  renderProductTable();
+}
+function renderProductTable(){
+  const q=($('#prod-search').value||'').toLowerCase(), cat=$('#prod-cat').value;
+  const rows=(state.cache.products||[])
+    .filter(p=>(!q || (p.item_name||'').toLowerCase().includes(q) || (p.item_id||'').toLowerCase().includes(q) || (p.brand||'').toLowerCase().includes(q)) && (!cat || p.category===cat))
+    .sort((a,b)=>b.revenue-a.revenue || b.views-a.views).slice(0,300);
+  $('#prod-table').innerHTML='<tr><th>Product</th><th>ID</th><th>Brand</th><th>Category</th><th>Views</th><th>Views Δ</th><th>ATC</th><th>Items</th><th>Revenue</th><th>Rev Δ</th><th>View→buy</th></tr>'+
+    rows.map(p=>`<tr><td class="name">${p.item_name||''}</td><td class="dim">${p.item_id}</td><td class="dim">${p.brand}</td><td class="dim">${p.category}</td>
+      <td>${fmtNum(p.views)}</td><td>${deltaBadge(delta(p.views,p.p_views))}</td><td>${fmtNum(p.atc)}</td><td>${fmtNum(p.items)}</td>
+      <td>${fmtGBP(p.revenue)}</td><td>${deltaBadge(delta(p.revenue,p.p_revenue))}</td><td>${p.views?fmtPct((p.items||0)/p.views):'–'}</td></tr>`).join('');
+  $('#prod-csv').onclick=()=>csvExport(rows.map(p=>[p.item_id,p.item_name,p.brand,p.category,p.views,p.atc,p.items,(p.revenue||0).toFixed(0)]),
+    ['ID','Name','Brand','Category','Views','ATC','Items','Revenue'],`products_${state.brand}_${state.start}_${state.end}.csv`);
+}
+
+/* ================= RENDER: BEHAVIOUR ================= */
+function renderBehaviour(){
+  const cur = totalsFiltered(isCur), prev = totalsFiltered(isPrev);
+  $('#funnel-sub').textContent = state.brand==='ALL' ? 'all brands (excl. own-brand)' : state.brand;
+  const stages=[['Item views',cur.views,prev.views],['Add to cart',cur.atc,prev.atc],['Checkout',cur.checkouts,prev.checkouts],['Items bought',cur.items,prev.items]];
+  const max=Math.max(cur.views,1);
+  let html='';
+  stages.forEach((s,i)=>{
+    html+=`<div class="funnel-row"><span class="st">${s[0]}</span>
+      <div class="funnel-bar" style="width:${Math.max(s[1]/max*100,0.4)}%"></div>
+      <span class="n">${fmtNum(s[1])}</span> ${deltaBadge(delta(s[1],s[2]))}</div>`;
+    if(i<stages.length-1){
+      const rate = s[1]? stages[i+1][1]/s[1] : null;
+      html+=`<div class="funnel-step">↓ ${rate==null?'–':fmtPct(rate,1)}</div>`;
+    }
+  });
+  $('#funnel-card').innerHTML=html;
+  // funnel rates by brand
+  const rows = state.brandTotals.filter(b=>b.cur.views>0).sort((a,b)=>b.cur.views-a.cur.views).slice(0,30);
+  $('#funnel-table').innerHTML='<tr><th>Brand</th><th>Views</th><th>ATC</th><th>View→ATC</th><th>Checkouts</th><th>ATC→Checkout</th><th>Items</th><th>View→buy</th><th>CVR (sess.)</th></tr>'+
+    rows.map(b=>{const c=b.cur;return `<tr class="clickable" data-brand="${b.brand.replace(/"/g,'&quot;')}"><td class="name">${b.brand}</td>
+      <td>${fmtNum(c.views)}</td><td>${fmtNum(c.atc)}</td><td>${c.views?fmtPct(c.atc/c.views,1):'–'}</td>
+      <td>${fmtNum(c.checkouts)}</td><td>${c.atc?fmtPct(c.checkouts/c.atc,1):'–'}</td>
+      <td>${fmtNum(c.items)}</td><td>${c.views?fmtPct(c.items/c.views):'–'}</td><td>${fmtPct(c.cvr)}</td></tr>`;}).join('');
+  $$('#funnel-table tr.clickable').forEach(tr=>tr.onclick=()=>setBrand(tr.dataset.brand));
+  // engagement chart
+  const eng = state.brandTotals.filter(b=>b.cur.sessions>50).sort((a,b)=>(b.cur.engRate||0)-(a.cur.engRate||0)).slice(0,20);
+  drawChart('eng-chart',{type:'bar',data:{labels:eng.map(b=>b.brand),datasets:[{label:'Engagement rate %',data:eng.map(b=>+(b.cur.engRate*100).toFixed(1)),backgroundColor:eng.map(b=>brandColor(b.brand))}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{max:100,ticks:{callback:v=>v+'%'}}}}});
+}
+
+/* ================= RENDER: BRAND PAGES ================= */
+function renderPages(){
+  const d = state.cache.pages; if(!d) return;
+  // trend bucketed
+  const buckets={};
+  for(const r of d.trend){ const k=bucketKey(r.date); buckets[k]=(buckets[k]||0)+r.sessions; }
+  const labels=Object.keys(buckets).sort();
+  drawChart('pages-chart',{type:'line',data:{labels,datasets:[{label:'Sessions',data:labels.map(k=>buckets[k]),borderColor:'#2C6E9B',backgroundColor:'rgba(44,110,155,.08)',fill:true,tension:.3,pointRadius:labels.length>40?0:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+  $('#pages-table').innerHTML='<tr><th>Page path</th><th>Sessions</th><th>Δ</th><th>Eng. rate</th></tr>'+
+    d.paths.map(p=>`<tr><td class="name" style="max-width:340px">${p.page_path}</td><td>${fmtNum(p.sessions)}</td><td>${deltaBadge(delta(p.sessions,p.p_sessions))}</td><td>${p.sessions?fmtPct(p.engaged/p.sessions,0):'–'}</td></tr>`).join('');
+  const tot=d.channels.reduce((s,c)=>s+c.sessions,0)||1;
+  $('#channel-table').innerHTML='<tr><th>Channel</th><th>Sessions</th><th>% of total</th><th>Δ</th></tr>'+
+    d.channels.map(c=>`<tr><td class="name">${c.channel_group}</td><td>${fmtNum(c.sessions)}</td><td>${fmtPct(c.sessions/tot,1)}</td><td>${deltaBadge(delta(c.sessions,c.p_sessions))}</td></tr>`).join('');
+}
+
+/* ================= ORCHESTRATION ================= */
+function renderFromCache(){
+  state.brandTotals = brandTotals();
+  renderKPIs(); renderLeague(); renderOvProducts();
+  renderTrends(); renderCategories(); renderBehaviour();
+  renderPages();
+}
+async function reloadBrandScoped(){
+  try{
+    const [products, pages] = await Promise.all([loadProducts(), loadPages()]);
+    state.cache.products = applyAliases(products); state.cache.pages = pages;
+    renderProducts(); renderOvProducts(); renderPages();
+  }catch(e){ if(e.message!=='Auth expired') showErr('Product/page query failed: '+e.message); }
+}
+async function loadAll(){
+  clearErr();
+  $('#ribbon').innerHTML='<div class="loading"><div class="spinner"></div>Querying BigQuery…</div>';
+  try{
+    const [brandDaily, categories, products, pages] = await Promise.all([
+      loadBrandDaily(), loadCategories(), loadProducts(), loadPages()
+    ]);
+    state.brandDaily = applyAliases(brandDaily);
+    state.cache.categories = applyAliases(categories);
+    state.cache.products = applyAliases(products);
+    state.cache.pages = pages;
+    state.brandTotals = brandTotals();
+    renderRibbon(); renderFromCache(); renderProducts();
+    $('#foot').textContent = `Data: GA4 export via BigQuery (${CONFIG.PROJECT_ID}.${CONFIG.DATASET}) · aggregate tables refresh daily ~09:00 · own-brand excluded: ${CONFIG.EXCLUDED_BRANDS.join(', ')}`;
+  }catch(e){
+    if(e.message!=='Auth expired'){
+      showErr('BigQuery error: '+e.message+'\n\nCheck: (1) you ran sql/1_setup_and_backfill.sql, (2) your Google account has BigQuery Data Viewer + Job User on the project, (3) OAUTH_CLIENT_ID is set in CONFIG.');
+      $('#ribbon').innerHTML='';
+    }
+  }
+}
+function boot(){
+  chartFont();
+  setRangeFromPreset();
+  loadAll();
+}
+
+/* ================= EVENTS ================= */
+$('#preset').onchange = ()=>{ if(setRangeFromPreset()) loadAll(); };
+$('#apply-dates').onclick = ()=>{
+  if(!$('#d-start').value||!$('#d-end').value) return;
+  state.start=$('#d-start').value; state.end=$('#d-end').value;
+  computeCompare(); loadAll();
+};
+$$('#cmp-seg button').forEach(b=>b.onclick=()=>{
+  $$('#cmp-seg button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  state.cmp=b.dataset.cmp; computeCompare(); loadAll();
+});
+$$('#gran-seg button').forEach(b=>b.onclick=()=>{
+  $$('#gran-seg button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  state.gran=b.dataset.g; renderFromCache();
+});
+$('#refresh').onclick=()=>loadAll();
+$$('nav.tabs button').forEach(b=>b.onclick=()=>{
+  $$('nav.tabs button').forEach(x=>x.classList.remove('active')); b.classList.add('active');
+  $$('.panel').forEach(p=>p.classList.remove('active'));
+  $('#p-'+b.dataset.tab).classList.add('active');
+  state.tab=b.dataset.tab;
+});
+$('#trend-metric').onchange=()=>renderTrends();
+$('#cat-metric').onchange=()=>renderCategories();
+$('#league-search').oninput=()=>renderLeague();
+$('#prod-search').oninput=()=>renderProductTable();
+$('#prod-cat').onchange=()=>renderProductTable();
+
+/* ================= DEMO MODE ================= */
+const DEMO_BRANDS=['Ercol','Stressless','Timothy Oulton','Orla Kiely','Pure Furniture','Eichholtz','Tetrad','Kartell','English Heritage','Conform','Tempur','Simba','Somnus','Cattelan Italia','Vispring','Linwood','Bontempi','Peressini'];
+const DEMO_CATS={'Sofas':['2 Seater','3 Seater','Corner'],'Dining Tables':['Extending','Fixed','Round'],'Dining Chairs':['Upholstered','Wooden'],'Beds':['Double','King','Super King'],'Sideboards':['Large','Small'],'Armchairs':['Recliner','Accent']};
+function mulberry(seed){return function(){let t=seed+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
+function demoBrandDaily(){
+  const rows=[]; const rnd=mulberry(42);
+  let d=parseISO(state.prevStart);
+  const end=parseISO(state.end);
+  while(d<=end){
+    const ds=iso(d);
+    DEMO_BRANDS.forEach((b,bi)=>{
+      const base=(20-bi)*40*(1+0.3*Math.sin(d/8.64e7/9+bi));
+      const views=Math.round(base*(0.7+rnd()*0.6));
+      const atc=Math.round(views*(0.03+rnd()*0.04));
+      const checkouts=Math.round(atc*(0.4+rnd()*0.3));
+      const items=Math.round(checkouts*(0.5+rnd()*0.4));
+      const transactions=Math.max(0,Math.round(items*0.8));
+      const sessions=Math.round(views*0.75);
+      rows.push({date:ds,brand:b,views,atc,checkouts,items,revenue:items*(300+rnd()*1200),sessions,engaged:Math.round(sessions*(0.7+rnd()*0.25)),transactions});
+    });
+    d=addDays(d,1);
+  }
+  return Promise.resolve(rows);
+}
+function demoCategories(){
+  const rows=[];const rnd=mulberry(7);
+  for(const b of DEMO_BRANDS) for(const [c,subs] of Object.entries(DEMO_CATS)) for(const s of subs){
+    if(rnd()<0.4) continue;
+    const v=Math.round(rnd()*3000);
+    rows.push({brand:b,category:c,subcategory:s,views:v,atc:Math.round(v*0.05),items:Math.round(v*0.008),revenue:Math.round(v*0.008)*900*rnd(),p_views:Math.round(v*(0.7+rnd()*0.7)),p_items:Math.round(v*0.007),p_revenue:Math.round(v*0.007)*900*rnd()});
+  }
+  return Promise.resolve(rows);
+}
+function demoProducts(){
+  const rows=[];const rnd=mulberry(11);
+  for(let i=0;i<180;i++){
+    const b=DEMO_BRANDS[Math.floor(rnd()*DEMO_BRANDS.length)];
+    if(state.brand!=='ALL'&&b!==state.brand&&rnd()<0.85) continue;
+    const cat=Object.keys(DEMO_CATS)[Math.floor(rnd()*6)];
+    const v=Math.round(rnd()*8000), items=rnd()<0.25?0:Math.round(v*0.005*rnd()*3);
+    rows.push({item_id:'SKU'+(1000+i),item_name:b+' '+cat.slice(0,-1)+' '+(i+1),brand:b,category:cat,views:v,atc:Math.round(v*0.04),items,transactions:Math.max(0,items-1),revenue:items*(400+rnd()*1500),p_views:Math.round(v*(0.6+rnd()*0.9)),p_revenue:Math.round(items*(0.5+rnd())*(400+rnd()*1500))});
+  }
+  return Promise.resolve(rows);
+}
+function demoPages(){
+  const rnd=mulberry(3);const trend=[];let d=parseISO(state.start);
+  while(d<=parseISO(state.end)){trend.push({date:iso(d),sessions:Math.round(80+rnd()*120)});d=addDays(d,1);}
+  const paths=['/brands','/brands/ercol','/brands/stressless','/brands/timothy-oulton','/brands/orla-kiely','/brands/tetrad','/brands/stressless/recliner-chairs'].map(p=>({page_path:p,sessions:Math.round(rnd()*400+30),engaged:Math.round(rnd()*300),p_sessions:Math.round(rnd()*400+30)}));
+  const channels=['Organic Search','Paid Search','Direct','Email','Referral','Paid Social','Cross-network'].map(c=>({channel_group:c,sessions:Math.round(rnd()*600),p_sessions:Math.round(rnd()*600)}));
+  return Promise.resolve({trend,paths,channels});
+}
+
+initAuth();
+</script>
+</body>
+</html>
