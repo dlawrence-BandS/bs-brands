@@ -64,6 +64,12 @@ select,input[type=date],input[type=search],input[type=text]{font-family:inherit;
 .btn.small{padding:4px 9px;font-size:.75rem}
 
 /* ---------- brand ribbon (signature) ---------- */
+#brand-select{font-weight:600;min-width:150px}
+.controls.filtered #brand-select{border-color:var(--oak);background:var(--oak-soft)}
+.filter-banner{display:none;align-items:center;gap:10px;background:var(--oak-soft);border-bottom:1px solid var(--line);padding:8px 22px;font-size:.84rem}
+.filter-banner.show{display:flex}
+.filter-banner strong{font-weight:600}
+.filter-banner .fb-clear{margin-left:auto}
 .ribbon-wrap{background:var(--surface);border-bottom:1px solid var(--line);padding:10px 22px 12px}
 .ribbon{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
 .chip{flex:0 0 auto;display:flex;flex-direction:column;gap:3px;min-width:118px;text-align:left;background:#fff;border:1px solid var(--line);border-radius:9px;padding:8px 10px;transition:border-color .12s}
@@ -209,9 +215,19 @@ footer{max-width:1240px;margin:0 auto;padding:0 22px 30px;font-size:.72rem;color
       <button data-g="month">Month</button>
     </div>
   </div>
+  <div class="ctl-group">
+    <label>Brand</label>
+    <select id="brand-select"><option value="ALL">All brands</option></select>
+    <button class="btn small hidden" id="brand-clear" title="Show all brands">✕ Clear</button>
+  </div>
   <div class="hd-spacer"></div>
   <span class="note" id="range-label"></span>
   <button class="btn small" id="refresh">↻ Refresh</button>
+</div>
+
+<div class="filter-banner" id="filter-banner">
+  <span>Viewing <strong id="fb-name"></strong> in isolation — every tab, table and chart below is filtered to this brand.</span>
+  <button class="btn small fb-clear" id="fb-clear">✕ Show all brands</button>
 </div>
 
 <div class="ribbon-wrap">
@@ -347,7 +363,7 @@ const CONFIG = {
   LOCATION: 'europe-west2',
   // Create at console.cloud.google.com > APIs & Services > Credentials > OAuth client ID (Web app)
   // Add your GitHub Pages URL to "Authorised JavaScript origins"
-  OAUTH_CLIENT_ID: '46227372300-rk63ag0caqgd7n12gjd0nt7f2qi7llqr.apps.googleusercontent.com',
+  OAUTH_CLIENT_ID: 'PASTE_CLIENT_ID.apps.googleusercontent.com',
   EXCLUDED_BRANDS: ['Barker and Stonehouse','Barker & Stonehouse','B&S','(not set)'],
   // Merge sub-brands into a parent for reporting (edit freely, or set {} to keep them separate)
   BRAND_ALIASES: {'Tetrad Harris Tweed':'Tetrad', 'Tetrad Heritage':'Tetrad'},
@@ -688,8 +704,24 @@ function chipHTML(id,name,rev,d,weeks){
     <span class="cmp ${cls}" style="font-size:.7rem;font-weight:600">${arrow}${d==null?'':Math.abs(d*100).toFixed(0)+'%'}</span></span>
     ${weeks&&weeks.length>1?sparkline(weeks,96,20,'#9AA8B1'):''}</button>`;
 }
+function populateBrandSelect(){
+  const sel = $('#brand-select');
+  const names = state.brandTotals.map(b=>b.brand).sort((a,b)=>a.localeCompare(b));
+  sel.innerHTML = '<option value="ALL">All brands ('+names.length+')</option>' +
+    names.map(n=>`<option value="${n.replace(/"/g,'&quot;')}"${state.brand===n?' selected':''}>${n}</option>`).join('');
+  sel.value = state.brand;
+}
+function syncFilterUI(){
+  const on = state.brand!=='ALL';
+  $('#brand-select').value = state.brand;
+  $('.controls').classList.toggle('filtered', on);
+  $('#brand-clear').classList.toggle('hidden', !on);
+  $('#filter-banner').classList.toggle('show', on);
+  if(on) $('#fb-name').textContent = state.brand;
+}
 function setBrand(b){
   state.brand = b;
+  syncFilterUI();
   renderRibbon();
   renderFromCache();
   reloadBrandScoped();
@@ -983,6 +1015,7 @@ async function loadAll(){
     state.cache.products = applyAliases(products);
     state.cache.pages = pages;
     state.brandTotals = brandTotals();
+    populateBrandSelect(); syncFilterUI();
     renderRibbon(); renderFromCache(); renderProducts();
     $('#foot').textContent = `Data: GA4 export via BigQuery (${CONFIG.PROJECT_ID}.${CONFIG.DATASET}) · aggregate tables refresh daily ~09:00 · own-brand excluded: ${CONFIG.EXCLUDED_BRANDS.join(', ')}`;
   }catch(e){
@@ -1014,6 +1047,9 @@ $$('#gran-seg button').forEach(b=>b.onclick=()=>{
   state.gran=b.dataset.g; renderFromCache();
 });
 $('#refresh').onclick=()=>loadAll();
+$('#brand-select').onchange = e => setBrand(e.target.value);
+$('#brand-clear').onclick = ()=> setBrand('ALL');
+$('#fb-clear').onclick = ()=> setBrand('ALL');
 $$('nav.tabs button').forEach(b=>b.onclick=()=>{
   $$('nav.tabs button').forEach(x=>x.classList.remove('active')); b.classList.add('active');
   $$('.panel').forEach(p=>p.classList.remove('active'));
