@@ -112,6 +112,8 @@ td.name{font-weight:600;max-width:280px;overflow:hidden;text-overflow:ellipsis}
 td.dim{color:var(--muted);font-weight:400}
 tr.clickable:hover td{background:#F6F8F9;cursor:pointer}
 tr.total td{font-weight:700;border-top:2px solid var(--line)}
+tr.league-sel td{background:var(--oak-soft)!important;font-weight:600}
+tr.league-sel td:first-child{box-shadow:inset 3px 0 0 var(--oak)}
 tr.subrow td:first-child{padding-left:30px;color:var(--ink-2)}
 .caret{display:inline-block;width:14px;color:var(--muted);font-size:.7rem}
 
@@ -226,7 +228,7 @@ footer{max-width:1240px;margin:0 auto;padding:0 22px 30px;font-size:.72rem;color
 </div>
 
 <div class="filter-banner" id="filter-banner">
-  <span>Viewing <strong id="fb-name"></strong> in isolation — every tab, table and chart below is filtered to this brand.</span>
+  <span>Viewing <strong id="fb-name"></strong> — KPIs, products, trends, categories and behaviour are filtered to this brand. The brand league table below always ranks all brands, with your selection highlighted.</span>
   <button class="btn small fb-clear" id="fb-clear">✕ Show all brands</button>
 </div>
 
@@ -240,7 +242,7 @@ footer{max-width:1240px;margin:0 auto;padding:0 22px 30px;font-size:.72rem;color
   <!-- OVERVIEW -->
   <section class="panel active" id="p-overview">
     <div class="grid kpis" id="kpi-grid"></div>
-    <h2 class="sect">Brand league table <span class="sub">click a column to sort · click a brand to filter everything to it · vs comparison period</span></h2>
+    <h2 class="sect">Brand league table <span class="sub">ranks all brands · click a column to sort · click a row to filter the rest of the dashboard to that brand</span></h2>
     <div class="card">
       <div class="pill-filters">
         <input type="search" id="league-search" placeholder="Search brands…" style="min-width:220px">
@@ -777,7 +779,7 @@ function renderLeague(){
   const {key,dir} = state.leagueSort;
   rows.sort((a,b)=> key==='brand' ? dir*a.brand.localeCompare(b.brand) : dir*(((a[key]??-Infinity))-((b[key]??-Infinity))));
   const head = '<tr>'+LEAGUE_COLS.map(c=>`<th data-k="${c.key}" class="${key===c.key?'sorted':''}">${c.label}${key===c.key?`<span class="arr"> ${dir<0?'▼':'▲'}</span>`:''}</th>`).join('')+'</tr>';
-  const body = rows.map(r=>'<tr class="clickable" data-brand="'+r.brand.replace(/"/g,'&quot;')+'">'+LEAGUE_COLS.map(c=>{
+  const body = rows.map(r=>'<tr class="clickable'+(r.brand===state.brand?' league-sel':'')+'" data-brand="'+r.brand.replace(/"/g,'&quot;')+'">'+LEAGUE_COLS.map(c=>{
     if(c.key==='brand') return `<td class="name">${r.brand}</td>`;
     if(c.key==='spark') return `<td>${sparkline(r.weekly,90,20,brandColor(r.brand))}</td>`;
     if(c.badge) return `<td>${deltaBadge(r[c.key])}</td>`;
