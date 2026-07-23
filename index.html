@@ -367,6 +367,8 @@ const CONFIG = {
   EXCLUDED_BRANDS: ['Barker and Stonehouse','Barker & Stonehouse','B&S','(not set)'],
   // Merge sub-brands into a parent for reporting (edit freely, or set {} to keep them separate)
   BRAND_ALIASES: {'Tetrad Harris Tweed':'Tetrad', 'Tetrad Heritage':'Tetrad'},
+  // Site /brands/ URLs that don't match the auto-generated slug (site jams some names together)
+  BRAND_SLUG_OVERRIDES: {'G Plan':'gplan', 'Old Java':'oldjava'},
   DEMO_MODE: false,          // true = fake data, no BigQuery needed (for previewing)
   PRODUCT_LIMIT: 500,
   TREND_TOP_N: 8
@@ -593,7 +595,7 @@ async function loadProducts(){
     WHERE rv <= ${CONFIG.PRODUCT_LIMIT} OR rr <= ${CONFIG.PRODUCT_LIMIT} OR rp <= 300`;
   return bq(sql);
 }
-function brandSlug(b){ return b.toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); }
+function brandSlug(b){ return CONFIG.BRAND_SLUG_OVERRIDES[b] || b.toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); }
 async function loadPages(){
   if(CONFIG.DEMO_MODE) return demoPages();
   const slugs = state.brand==='ALL' ? [] :
@@ -959,8 +961,10 @@ function renderBehaviour(){
     }
   });
   $('#funnel-card').innerHTML=html;
-  // funnel rates by brand
-  const rows = state.brandTotals.filter(b=>b.cur.views>0).sort((a,b)=>b.cur.views-a.cur.views).slice(0,30);
+  // funnel rates by brand — respect active brand filter
+  const rows = state.brandTotals
+    .filter(b=>b.cur.views>0 && (state.brand==='ALL' || b.brand===state.brand))
+    .sort((a,b)=>b.cur.views-a.cur.views).slice(0,30);
   $('#funnel-table').innerHTML='<tr><th>Brand</th><th>Views</th><th>ATC</th><th>View→ATC</th><th>Checkouts</th><th>ATC→Checkout</th><th>Items</th><th>View→buy</th><th>CVR (sess.)</th></tr>'+
     rows.map(b=>{const c=b.cur;return `<tr class="clickable" data-brand="${b.brand.replace(/"/g,'&quot;')}"><td class="name">${b.brand}</td>
       <td>${fmtNum(c.views)}</td><td>${fmtNum(c.atc)}</td><td>${c.views?fmtPct(c.atc/c.views,1):'–'}</td>
@@ -968,7 +972,7 @@ function renderBehaviour(){
       <td>${fmtNum(c.items)}</td><td>${c.views?fmtPct(c.items/c.views):'–'}</td><td>${fmtPct(c.cvr)}</td></tr>`;}).join('');
   $$('#funnel-table tr.clickable').forEach(tr=>tr.onclick=()=>setBrand(tr.dataset.brand));
   // engagement chart
-  const eng = state.brandTotals.filter(b=>b.cur.sessions>50).sort((a,b)=>(b.cur.engRate||0)-(a.cur.engRate||0)).slice(0,20);
+  const eng = state.brandTotals.filter(b=>b.cur.sessions>50 && (state.brand==='ALL' || b.brand===state.brand)).sort((a,b)=>(b.cur.engRate||0)-(a.cur.engRate||0)).slice(0,20);
   drawChart('eng-chart',{type:'bar',data:{labels:eng.map(b=>b.brand),datasets:[{label:'Engagement rate %',data:eng.map(b=>+(b.cur.engRate*100).toFixed(1)),backgroundColor:eng.map(b=>brandColor(b.brand))}]},
     options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{max:100,ticks:{callback:v=>v+'%'}}}}});
 }
